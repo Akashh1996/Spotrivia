@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <div id="play">PLAY</div>
+    <div id="gameOver" style="color: black; display: none" class="gameOver">
+      Game Fucking over
+    </div>
+    <div class="start" style="color: black; display: none">StartAgain</div>
+    <audio src="" id="song" controls style="display: none"></audio>
+
+    <div
+      class="main"
+      style="
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        display: none;
+      "
+    >
+      <div style="width: 100%">
+        <div
+          id="artist"
+          style="
+            text-align: center;
+            font-size: 40px;
+            color: white;
+            margin-bottom: 25px;
+          "
+        ></div>
+
+        <div style="display: flex; justify-content: space-between">
+          <div
+            id="correct"
+            style="
+              font-size: 4em;
+              margin-left: 10px;
+              background-color: #1db954;
+              height: 80px;
+              width: 80px;
+              text-align: center;
+            "
+          >
+            0
+          </div>
+          <div><img src="" alt="" id="img" /></div>
+          <div
+            id="incorrect"
+            style="
+              font-size: 4em;
+              margin-right: 10px;
+              background-color: red;
+              height: 80px;
+              width: 80px;
+              text-align: center;
+            "
+          >
+            0
+          </div>
+        </div>
+      </div>
+      <div style="width: 100%; justify-content: center">
+        <div
+          style="display: flex; align-items: center; justify-content: center"
+        >
+          <div id="option1" class="options"></div>
+          <div id="option2" class="options"></div>
+        </div>
+
+        <div
+          style="display: flex; align-items: center; justify-content: center"
+        >
+          <div id="option3" class="options"></div>
+          <div id="option4" class="options"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="store.js"></script>
+
+    <script>
+      let spotifyStore = new SpotifyStore();
+
+      (async () => {
+        await spotifyStore.getToken();
+        await spotifyStore.getArtist();
+        let song = document.getElementById("song");
+
+        function generateRandom() {
+          return Math.floor(Math.random() * 31);
+        }
+
+        let randomNum = generateRandom();
+
+        function displayRandomDOm() {
+          song.src = artistsList[randomNum].track.preview_url;
+
+          document.getElementById("artist").innerHTML =
+            artistsList[randomNum].track.artists[0].name;
+          document.getElementById("img").src =
+            artistsList[randomNum].track.album.images[1].url;
+          song.play();
+        }
+
+        function displayAnswer() {
+          let myArr = [];
+          let randomAnswer = Math.floor(Math.random() * 31);
+          for (let index = 0; index < 3; index++) {
+            randomAnswer = generateRandom();
+            myArr.push(artistsList[randomAnswer].track.name);
+          }
+          myArr.push(artistsList[randomNum].track.name);
+          myArr.sort(() => Math.random() - 0.5);
+
+          for (let index = 0; index < myArr.length; index++) {
+            document.getElementById(`option${index + 1}`).innerHTML =
+              myArr[index];
+            document.getElementById(`option${index + 1}`).style.background =
+              "white";
+          }
+        }
+
+        displayRandomDOm();
+        displayAnswer();
+
+        let gameOn = true;
+        let correct = 0;
+        let incorrect = 0;
+        debugger;
+        let counter = 0;
+        function startGame() {
+          function checkAnswer() {
+            if (
+              this.innerHTML === artistsList[randomNum].track.name &&
+              gameOn === true
+            ) {
+              console.log("good");
+              console.log(this);
+              this.style.backgroundColor = "#1DB954";
+              correct++;
+
+              /*                 debugger;
+               */ document.getElementById("correct").innerHTML = correct;
+
+              setTimeout(() => {
+                generateRandom();
+                randomNum = generateRandom();
+
+                displayRandomDOm();
+
+                displayAnswer();
+              }, 1000);
+            } else if (
+              this.innerHTML !== artistsList[randomNum].track.name &&
+              gameOn === true
+            ) {
+              this.style.backgroundColor = "red";
+              incorrect++;
+              /*                 debugger;
+               */ document.getElementById("incorrect").innerHTML = incorrect;
+
+              setTimeout(() => {
+                generateRandom();
+                randomNum = generateRandom();
+                displayRandomDOm();
+                displayAnswer();
+              }, 1000);
+            }
+
+            if (correct + incorrect === 10) {
+              song.src = "";
+              gameOn = false;
+              setTimeout(() => {
+                document.querySelector(".main").style.display = "none";
+                document.querySelector(".gameOver").style.display = "block";
+                document.querySelector(".start").style.display = "block";
+              }, 3000);
+            }
+          }
+          if (counter === 0) {
+            debugger;
+            counter = 1;
+            document.querySelectorAll(".options").forEach((each) => {
+              each.addEventListener("click", checkAnswer);
+            });
+          }
+        }
+
+        document.getElementById("play").addEventListener("click", () => {
+          document.querySelector(".main").style.display = "block";
+          document.querySelector("#play").style.display = "none";
+          song.play();
+          startGame();
+        });
+
+        function reset() {
+          console.log("daviddd matyoo");
+          correct = 0;
+          incorrect = 0;
+          gameOn = true;
+          document.getElementById("correct").innerHTML = correct;
+          document.getElementById("incorrect").innerHTML = incorrect;
+        }
+
+        document.querySelector(".start").addEventListener("click", () => {
+          song.play();
+
+          document.querySelector(".main").style.display = "block";
+          document.querySelector(".gameOver").style.display = "none";
+          document.querySelector(".start").style.display = "none";
+
+          reset();
+          /*         window.location.reload()
+           */
+
+          startGame();
+          gameOn = true;
+        });
+      })();
+    </script>
+  </body>
+</html>
